@@ -2,6 +2,7 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import MeetupList from '../components/meetups/MeetupList';
 import Layout from '../components/layout/Layout'
+import { useEffect, useState } from 'react';
 
 
 const DUMMY_MEETUPS = [
@@ -28,8 +29,34 @@ const DUMMY_MEETUPS = [
   }
   ];
 
-export default function HomePage() {
+ 
+
+export default function HomePage(props) {
+
+  const [loadedMeetups,setLoadedMeetups] = useState([]);
+  useEffect(()=>{
+  setLoadedMeetups(DUMMY_MEETUPS)
+  },[]);
   return (
-<MeetupList meetups={DUMMY_MEETUPS}/>
+<MeetupList meetups={props.meetups}/>
   )
 }
+
+// export async function getServerSideProps(context){
+
+//   const req = context.req;
+//   const res = context.res;
+//    return {
+//     meetups:DUMMY_MEETUPS
+//    }
+// }
+
+export async function getStaticProps(){
+  return {
+    props:{
+      meetups:DUMMY_MEETUPS
+    }
+    ,
+    revalidate:10
+  }
+    }
