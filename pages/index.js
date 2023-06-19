@@ -2,7 +2,9 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import MeetupList from '../components/meetups/MeetupList';
 import Layout from '../components/layout/Layout'
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { MongoClient } from 'mongodb';
+
 
 
 const DUMMY_MEETUPS = [
@@ -38,7 +40,13 @@ export default function HomePage(props) {
   setLoadedMeetups(DUMMY_MEETUPS)
   },[]);
   return (
+    <Fragment>
+    <Head>
+      <title>React Meetups</title>
+      <meta name='description' content='Browse a Huge list of higly active React Meetups'/>
+    </Head>
 <MeetupList meetups={props.meetups}/>
+</Fragment>
   )
 }
 
@@ -52,9 +60,20 @@ export default function HomePage(props) {
 // }
 
 export async function getStaticProps(){
+  const client = await MongoClient.connect(`${process.env.REACT_APP_FireBaseAPI}`)
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+   const meetups = await meetupsCollection.find().toArray();
+   client.close();
   return {
     props:{
-      meetups:DUMMY_MEETUPS
+      meetups:meetups.map(meetup=>({
+        title:meetup.title,
+        address:meetup.address,
+        image:meetup.image,
+        id:meetup._id.toString()
+      }))
     }
     ,
     revalidate:10
